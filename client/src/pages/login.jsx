@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { AppWindowIcon, CodeIcon } from "lucide-react"
 // kesavyadav072_db_user
 // abV99RuMDwZ9Q03Q
-// mongodb+srv://kesavyadav072_db_user:abV99RuMDwZ9Q03Q@cluster0.tqxc4h2.mongodb.net/
 
 import { Button } from "@/components/ui/button"
 import {
