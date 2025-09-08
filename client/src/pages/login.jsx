@@ -1,9 +1,5 @@
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { AppWindowIcon, CodeIcon } from "lucide-react"
-// kesavyadav072_db_user
-// abV99RuMDwZ9Q03Q
+import { useLoginUserMutation, useRegisterUserMutation } from "@/features/api/authApi";
+import { AppWindowIcon, CodeIcon, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,188 +18,186 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { useState } from "react"
-
-// Define Zod schemas
-const signupSchema = z.object({
-  name: z.string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be less than 50 characters"),
-  email: z.string()
-    .email("Please enter a valid email address"),
-  password: z.string()
-    .min(6, "Password must be at least 6 characters")
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number")
-});
-
-const loginSchema = z.object({
-  email: z.string()
-    .email("Please enter a valid email address"),
-  password: z.string()
-    .min(1, "Password is required")
-});
+import { useEffect, useState } from "react"
+import { toast } from "sonner";
 
 const Login = () => {
-  const [activeTab, setActiveTab] = useState("signup");
+  const [signupInput, setSignupInput] = useState({
+    name: '',
+    email: '',
+    password: ''
+  })
+  const [loginInput, setLoginInput] = useState({
+    email: '',
+    password: ''
+  })
 
-  // Signup form
-  const { 
-    register: registerSignup, 
-    handleSubmit: handleSignupSubmit, 
-    formState: { errors: signupErrors, isSubmitting: isSignupSubmitting },
-    reset: resetSignup
-  } = useForm({
-    resolver: zodResolver(signupSchema)
-  });
-
-  // Login form
-  const { 
-    register: registerLogin, 
-    handleSubmit: handleLoginSubmit, 
-    formState: { errors: loginErrors, isSubmitting: isLoginSubmitting },
-    reset: resetLogin
-  } = useForm({
-    resolver: zodResolver(loginSchema)
-  });
-
-  const onSignupSubmit = async (data) => {
-    console.log("Signup data:", data);
-    // Add your signup API call here
-    try {
-      // await signupApiCall(data);
-      resetSignup();
-    } catch (error) {
-      console.error("Signup error:", error);
+  const [
+    registerUser,
+    {
+      data: registerData,
+      error: registerError,
+      isLoading: registerLoading,
+      isSuccess: registerIsSuccess
     }
-  };
-
-  const onLoginSubmit = async (data) => {
-    console.log("Login data:", data);
-    // Add your login API call here
-    try {
-      // await loginApiCall(data);
-      resetLogin();
-    } catch (error) {
-      console.error("Login error:", error);
+  ] = useRegisterUserMutation()
+  const [
+    loginUser,
+    {
+      data: loginData,
+      error: loginError,
+      isLoading: loginLoading,
+      isSuccess: loginIsSuccess
     }
-  };
+  ] = useLoginUserMutation()
 
+  const changeInputHandler = (e, type) => {
+    const { name, value } = e.target;
+    if (type === 'signup') {
+      setSignupInput({ ...signupInput, [name]: value })
+    } else {
+      setLoginInput({ ...loginInput, [name]: value })
+    }
+  }
+
+  const handleRegistration = async (type) => {
+    const inputData = type === 'signup' ? signupInput : loginInput;
+    const action = type === 'signup' ? registerUser : loginUser;
+    await action(inputData)
+  }
+
+  useEffect(() => {
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup Successfully.")
+    }
+    if (registerError) {
+      toast.error(registerError?.data?.message || 'Error occured')
+    }
+    if (loginIsSuccess && loginData) {
+      toast.success(loginData.message || "Signup Successfully.")
+    }
+    if (loginError) {
+      toast.error(loginError?.data?.message || 'Error occured')
+    }
+  }, [
+    loginData,
+    loginLoading,
+    loginError,
+    registerData,
+    registerLoading,
+    registerError
+  ])
   return (
-    <div className="flex w-full items-center justify-center">
+    <div className="flex w-full items-center justify-center mt-20">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Tabs defaultValue="signup" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className='flex gap-3'>
+        <Tabs defaultValue="account">
+          <TabsList className='flex justify-between items-center w-full'>
             <TabsTrigger value="signup" className='cursor-pointer'>Signup</TabsTrigger>
             <TabsTrigger value="login" className='cursor-pointer'>Login</TabsTrigger>
           </TabsList>
-          
-          {/* Signup Form */}
           <TabsContent value="signup">
             <Card>
               <CardHeader>
                 <CardTitle>Signup</CardTitle>
                 <CardDescription>
-                  Create an account and click on register when you're done
+                  create an account and click on register when you're done
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={handleSignupSubmit(onSignupSubmit)}>
-                <CardContent className="grid gap-6">
-                  <div className="grid gap-3">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      type='text'
-                      id="name"
-                      {...registerSignup("name")}
-                      placeholder='Eg. Keshav'
-                    />
-                    {signupErrors.name && (
-                      <p className="text-sm text-red-500">{signupErrors.name.message}</p>
-                    )}
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      type='email'
-                      id="signup-email"
-                      {...registerSignup("email")}
-                      placeholder='Eg. kesav@gmail.com'
-                    />
-                    {signupErrors.email && (
-                      <p className="text-sm text-red-500">{signupErrors.email.message}</p>
-                    )}
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      type='password'
-                      id="signup-password"
-                      {...registerSignup("password")}
-                      placeholder='*********'
-                    />
-                    {signupErrors.password && (
-                      <p className="text-sm text-red-500">{signupErrors.password.message}</p>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    disabled={isSignupSubmitting}
-                    className='cursor-pointer mt-2'
-                  >
-                    {isSignupSubmitting ? "Registering..." : "Register"}
-                  </Button>
-                </CardFooter>
-              </form>
+              <CardContent className="grid gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="tabs-demo-name">Name</Label>
+                  <Input
+                    type='text'
+                    name='name'
+                    value={signupInput.name}
+                    onChange={(e) => changeInputHandler(e, "signup")}
+                    placeholder='Eg. Keshav'
+                    required='true'
+                  />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="tabs-demo-username">Email</Label>
+                  <Input
+                    type='email'
+                    name='email'
+                    value={signupInput.email}
+                    onChange={(e) => changeInputHandler(e, "signup")}
+                    placeholder='Eg. kesav@gmail.com'
+                    required='true'
+                  />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="tabs-demo-username">Password</Label>
+                  <Input
+                    type='password'
+                    name='password'
+                    value={signupInput.password}
+                    onChange={(e) => changeInputHandler(e, "signup")}
+                    placeholder='*********'
+                    required='true'
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button disabled={registerLoading} onClick={() => handleRegistration('signup')} className='cursor-pointer'>
+                  {
+                    registerLoading ?
+                      (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> please wait
+                        </>
+                      ) : "register"
+                  }
+                </Button>
+              </CardFooter>
             </Card>
           </TabsContent>
 
-          {/* Login Form */}
+          {/* login  */}
+
           <TabsContent value="login">
             <Card>
               <CardHeader>
                 <CardTitle>Login</CardTitle>
                 <CardDescription>
-                  Login here
+                  login here
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={handleLoginSubmit(onLoginSubmit)}>
-                <CardContent className="grid gap-6">
-                  <div className="grid gap-3">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      type='email'
-                      id="login-email"
-                      {...registerLogin("email")}
-                      placeholder='Eg. kesav@gmail.com'
-                    />
-                    {loginErrors.email && (
-                      <p className="text-sm text-red-500">{loginErrors.email.message}</p>
-                    )}
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      type='password'
-                      id="login-password"
-                      {...registerLogin("password")}
-                      placeholder='*********'
-                    />
-                    {loginErrors.password && (
-                      <p className="text-sm text-red-500">{loginErrors.password.message}</p>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    disabled={isLoginSubmitting}
-                    className='cursor-pointer mt-2'
-                  >
-                    {isLoginSubmitting ? "Logging in..." : "Login"}
-                  </Button>
-                </CardFooter>
-              </form>
+              <CardContent className="grid gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="tabs-demo-username">Email</Label>
+                  <Input
+                    type='email'
+                    name='email'
+                    value={loginInput.email}
+                    onChange={(e) => changeInputHandler(e, "login")}
+                    placeholder='Eg. kesav@gmail.com'
+                    required='true'
+                  />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="tabs-demo-username">Password</Label>
+                  <Input
+                    type='password'
+                    name='password'
+                    value={loginInput.password}
+                    onChange={(e) => changeInputHandler(e, "login")}
+                    placeholder='*********'
+                    required='true'
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button disabled={loginLoading} onClick={() => handleRegistration('login')}>
+                  {
+                    loginLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> please wait
+                      </>
+                    ) : "Login"
+                  }
+                </Button>
+              </CardFooter>
             </Card>
           </TabsContent>
         </Tabs>

@@ -11,9 +11,9 @@ const connectDB = require('./database/db')
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: 'http://localhost:5173/',
+  origin: 'http://localhost:5173',
   credentials: true,
-}))
+}));
 // apis
 app.use('/api/v1/user', userRoute)
 const PORT = process.env.PORT;
