@@ -29,6 +29,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { Link } from 'react-router-dom'
 
 const Navbar = () => {
 
@@ -39,10 +40,10 @@ const Navbar = () => {
 
       {/* Desktop version  */}
       <div className='max-w-7xl mx-auto hidden md:flex justify-between items-center gap-10 h-full'>
-        <div className="flex items-center gap-2">
+        <Link to='/' className="flex items-center gap-2">
           <School />
           <h1 className='hidden md:block font-extrabold text-2xl'>E-Learning</h1>
-        </div>
+        </Link>
 
         <div className='flex items-center gap-4'>
           {

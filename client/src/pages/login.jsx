@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({
@@ -31,6 +32,7 @@ const Login = () => {
     email: '',
     password: ''
   })
+  const navigate = useNavigate()
 
   const [
     registerUser,
@@ -75,6 +77,7 @@ const Login = () => {
     }
     if (loginIsSuccess && loginData) {
       toast.success(loginData.message || "Signup Successfully.")
+      navigate('/')
     }
     if (loginError) {
       toast.error(loginError?.data?.message || 'Error occured')
